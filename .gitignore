@@ -1,0 +1,11 @@
+# binaries
+# main
+
+# dependency directories
+vendor/
+
+# environment
+.env
+
+# system
+.DS_Store
