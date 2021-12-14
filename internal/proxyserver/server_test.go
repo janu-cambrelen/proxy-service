@@ -7,6 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO(TESTS): add unit tests for other ProxyServer methods
+
 // UNIT TESTS
 
 // TestBodyValidation tests the validateRequestBody method on ProxyServer
