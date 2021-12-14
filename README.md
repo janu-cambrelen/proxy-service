@@ -2,6 +2,7 @@
 > A service to proxy requests to a given backend service.
 
 ---
+Go 1.17+
 ## Clone
 ```
 git clone git@github.com:janu-cambrelen/proxy-service.git
