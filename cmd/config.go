@@ -10,12 +10,16 @@ import (
 
 // Config defines the server configuration.
 type Config struct {
-	Source       string // the source from which the config was loaded
-	Debug        bool   `mapstructure:"DEBUG"`         // set debug mode
-	Host         string `mapstructure:"HOST"`          // proxy server host name
-	Port         int    `mapstructure:"PORT"`          // proxy server port number
-	TargetURL    string `mapstructure:"TARGET_URL"`    // url of target backend service
-	RequestDelay int    `mapstructure:"REQUEST_DELAY"` // number of seconds to delay consecutive requests
+	Source            string // the source from which the config was loaded
+	Debug             bool   `mapstructure:"DEBUG"`              // set debug mode
+	Host              string `mapstructure:"HOST"`               // proxy server host name
+	Port              int    `mapstructure:"PORT"`               // proxy server port number
+	TargetURL         string `mapstructure:"TARGET_URL"`         // url of target backend service
+	RequestDelay      uint   `mapstructure:"REQUEST_DELAY"`      // number of seconds to delay consecutive requests
+	BodyMethodsOnly   bool   `mapstructure:"BODY_METHODS_ONLY"`  // whether to accept only POST, PUT, PATCH requests
+	RejectWith        string `mapstructure:"REJECT_WITH"`        // reject requests with the specified word / phrase
+	RejectExact       bool   `mapstructure:"REJECT_EXACT"`       // whether to reject based on exact match, otherwise it will filter if 'contains'
+	RejectInsensitive bool   `mapstructure:"REJECT_INSENSITIVE"` // whether to perform case insensitive rejection validation
 }
 
 // validate is method to validate the server configuration.
@@ -86,8 +90,16 @@ func loadFlags() (*Config, error) {
 		&cfg.Port, "port", 8080, "proxy server port number")
 	flag.StringVar(
 		&cfg.TargetURL, "target-url", "", "url of target backend service")
-	flag.IntVar(
+	flag.UintVar(
 		&cfg.RequestDelay, "request-delay", 2, "number of seconds to delay consecutive requests")
+	flag.BoolVar(
+		&cfg.BodyMethodsOnly, "body-methods-only", false, "accept POST, PUT, PATCH requests only")
+	flag.StringVar(
+		&cfg.RejectWith, "reject-with", "", "reject requests with the specified word / phrase")
+	flag.BoolVar(
+		&cfg.RejectExact, "reject-exact", false, "whether to reject based on exact match, otherwise it will filter if 'contains'")
+	flag.BoolVar(
+		&cfg.RejectInsensitive, "reject-insensitive", false, "whether to perform case insensitive rejection validation")
 	flag.Parse()
 
 	err := cfg.validate()

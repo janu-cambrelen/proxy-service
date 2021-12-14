@@ -1,0 +1,60 @@
+package proxyserver // import "github.com/janu-cambrelen/proxy-service/internal/proxyserver"
+
+
+TYPES
+
+type HeaderCopy struct {
+	Host           []string
+	Accept         []string
+	UserAgent      []string
+	Connection     []string
+	ContentType    []string
+	ContentLength  []string
+	AcceptEncoding []string
+}
+    HeaderCopy defines a subset of common, non-auth, related headers. These
+    headers will be used when comparing two requests. The values are captured
+    from incoming HTTP headers.
+
+type ProxyServer struct {
+	Debug             bool
+	TargetURL         string
+	RequestDelay      uint
+	BodyMethodsOnly   bool
+	RejectWith        string
+	RejectExact       bool
+	RejectInsensitive bool
+	Logger            *zap.Logger
+	PriorRequest      RequestCopy
+}
+    ProxyServer defines the HTTP proxy server.
+
+func NewProxyServer(
+	d bool,
+	turl string,
+	rd uint,
+	bmo bool,
+	rw string,
+	re bool,
+	ri bool,
+	l *zap.Logger,
+	pr RequestCopy,
+) *ProxyServer
+    NewProxyServer constructor creates a new ProxyServer.
+
+func (s *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request)
+    ServeHTTP is the main handler used by the server.
+
+func (s *ProxyServer) WithRequestLoggerMiddleware() http.Handler
+    WithRequestLoggerMiddleware is "middleware" that logs every request
+
+type RequestCopy struct {
+	Method    string
+	TargetURL string
+	TargetURI string
+	Header    HeaderCopy
+	Body      []byte
+}
+    RequestCopy defines a request representation that is used to compare
+    requests. The values are captured from incoming HTTP requests.
+

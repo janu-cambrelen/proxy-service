@@ -1,0 +1,39 @@
+package cmd // import "github.com/janu-cambrelen/proxy-service/cmd"
+
+
+FUNCTIONS
+
+func NewLogger(debug bool) (*zap.Logger, error)
+    NewLogger is a simple wrapper function to return either a development or
+    production logger based on the boolean value of the DEBUG configuration
+    setting. The development logger writes DEBUG and above, whereas the
+    production logger writes INFO and above. The developement logger is, among
+    other things, more readable and useful for developement; however, it should
+    not be used in production.
+
+func Run() error
+
+TYPES
+
+type Config struct {
+	Source            string // the source from which the config was loaded
+	Debug             bool   `mapstructure:"DEBUG"`              // set debug mode
+	Host              string `mapstructure:"HOST"`               // proxy server host name
+	Port              int    `mapstructure:"PORT"`               // proxy server port number
+	TargetURL         string `mapstructure:"TARGET_URL"`         // url of target backend service
+	RequestDelay      uint   `mapstructure:"REQUEST_DELAY"`      // number of seconds to delay consecutive requests
+	BodyMethodsOnly   bool   `mapstructure:"BODY_METHODS_ONLY"`  // whether to accept only POST, PUT, PATCH requests
+	RejectWith        string `mapstructure:"REJECT_WITH"`        // reject requests with the specified word / phrase
+	RejectExact       bool   `mapstructure:"REJECT_EXACT"`       // whether to reject based on exact match, otherwise it will filter if 'contains'
+	RejectInsensitive bool   `mapstructure:"REJECT_INSENSITIVE"` // whether to perform case insensitive rejection validation
+}
+    Config defines the server configuration.
+
+func SetConfig(path string, filename string) (cfg *Config, err error)
+    SetConfig loads configuration from a specified file or from flags/defaults.
+    It first attempts to set config values using a file that lives at the given
+    path and has the given name. If it encounters an error, it then attempts to
+    load using CLI flags or fallback default values. It will return an error if
+    both options fail to pass the validation check within the `validate` method
+    on the Config struct.
+

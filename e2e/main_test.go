@@ -1,24 +1,33 @@
-package cmd
+package e2e
 
 import (
-	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
 
+	"github.com/janu-cambrelen/proxy-service/cmd"
 	"github.com/janu-cambrelen/proxy-service/internal/proxyserver"
 	"go.uber.org/zap"
 )
 
-func Run() error {
+var tc struct {
+	cfg    *cmd.Config
+	server *httptest.Server
+	client *http.Client
+}
+
+func TestMain(m *testing.M) {
 	// set config from file or CLI flags
-	cfg, err := SetConfig(".", ".env")
+	cfg, err := cmd.SetConfig(".", ".env")
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	// new development or production zap logger
-	logger, err := NewLogger(cfg.Debug)
+	logger, err := cmd.NewLogger(cfg.Debug)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	defer logger.Sync()
 
@@ -37,11 +46,15 @@ func Run() error {
 	logger.Info("initializing server")
 	logger.Debug("server configuration", zap.Any("details", cfg)) // only when DEBUG=true
 
-	// listen and serve handler
-	addr := fmt.Sprintf("%s:%v", cfg.Host, cfg.Port)
-	if err := http.ListenAndServe(addr, handler); err != http.ErrServerClosed {
-		logger.Error("unexpected server error", zap.Error(err))
-	}
+	// test config
+	tc.cfg = cfg
 
-	return nil
+	// test server
+	tc.server = httptest.NewServer(handler)
+	defer tc.server.Close()
+
+	// test client
+	tc.client = tc.server.Client()
+
+	os.Exit(m.Run())
 }
