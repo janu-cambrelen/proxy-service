@@ -21,15 +21,15 @@ import (
 
 // ProxyServer defines the HTTP proxy server.
 type ProxyServer struct {
-	Debug             bool
-	TargetURL         string
-	RequestDelay      uint
-	BodyMethodsOnly   bool
-	RejectWith        string
-	RejectExact       bool
-	RejectInsensitive bool
-	Logger            *zap.Logger
-	PriorRequest      RequestCopy
+	debug             bool
+	targetURL         string
+	requestDelay      uint
+	bodyMethodsOnly   bool
+	rejectWith        string
+	rejectExact       bool
+	rejectInsensitive bool
+	logger            *zap.Logger
+	priorRequest      RequestCopy
 }
 
 // RequestCopy defines a request representation that is used to compare requests.
@@ -38,14 +38,14 @@ type RequestCopy struct {
 	Method    string
 	TargetURL string
 	TargetURI string
-	Header    HeaderCopy
+	Header    headerCopy
 	Body      []byte
 }
 
-// HeaderCopy defines a subset of common, non-auth, related headers.
+// headerCopy defines a subset of common, non-auth, related headers.
 // These headers will be used when comparing two requests.
 // The values are captured from incoming HTTP headers.
-type HeaderCopy struct {
+type headerCopy struct {
 	Host           []string
 	Accept         []string
 	UserAgent      []string
@@ -74,15 +74,15 @@ func NewProxyServer(
 	pr RequestCopy,
 ) *ProxyServer {
 	s := &ProxyServer{
-		Debug:             d,
-		TargetURL:         turl,
-		RequestDelay:      rd,
-		BodyMethodsOnly:   bmo,
-		RejectWith:        rw,
-		RejectExact:       re,
-		RejectInsensitive: ri,
-		Logger:            l,
-		PriorRequest:      pr,
+		debug:             d,
+		targetURL:         turl,
+		requestDelay:      rd,
+		bodyMethodsOnly:   bmo,
+		rejectWith:        rw,
+		rejectExact:       re,
+		rejectInsensitive: ri,
+		logger:            l,
+		priorRequest:      pr,
 	}
 	return s
 }
@@ -90,7 +90,7 @@ func NewProxyServer(
 // ServeHTTP is the main handler used by the server.
 func (s *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// validate request method
-	if s.BodyMethodsOnly {
+	if s.bodyMethodsOnly {
 		methodAllowed := false
 		allowedMethods := [3]string{"POST", "PUT", "PATCH"}
 		for _, m := range allowedMethods {
@@ -130,7 +130,7 @@ func (s *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// reject requests with the word/phrase within the string value of `s.RejectWith`
 	// whether the check is "exact" or "contains" is determined by the `s.RejectExact` boolean
 	// please refer to the method's documentation for additional context
-	if s.RejectWith != "" {
+	if s.rejectWith != "" {
 		err = s.validateRequestBody(string(cb))
 		if err != nil {
 			// consider whether `400 BAD REQUEST` or `422 UNPROCESSABLE ENTITY`
@@ -143,22 +143,22 @@ func (s *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// delay response for consecutive requests
 	ch := s.copyHeader(r.Header)
 
-	pr := s.PriorRequest
+	pr := s.priorRequest
 	cr := RequestCopy{
 		Method:    r.Method,
-		TargetURL: s.TargetURL,
+		TargetURL: s.targetURL,
 		TargetURI: r.RequestURI,
 		Header:    ch,
 		Body:      cb,
 	}
 
 	if cmp.Equal(pr, cr) {
-		d := time.Duration(s.RequestDelay * uint(time.Second))
-		s.Logger.Info("consecutive requests detected, delaying response", zap.Any("seconds", s.RequestDelay))
+		d := time.Duration(s.requestDelay * uint(time.Second))
+		s.logger.Info("consecutive requests detected, delaying response", zap.Any("seconds", s.requestDelay))
 		time.Sleep(d)
 	}
 
-	s.PriorRequest = cr
+	s.priorRequest = cr
 
 	// prepare request to hit backend service
 	req, err := s.prepareRequest(r)
@@ -173,7 +173,7 @@ func (s *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// create a request id that will be set to the `X-Proxy-Request-ID` response
 	reqID := uuid.NewString()
-	s.Logger.Info("processing", zap.String("X-Proxy-Request-ID", reqID))
+	s.logger.Info("processing", zap.String("X-Proxy-Request-ID", reqID))
 
 	// make request backend service and write the result to the client
 	code, err := s.requestBackendService(w, req, reqID)
@@ -194,7 +194,7 @@ func (s *ProxyServer) WithRequestLoggerMiddleware() http.Handler {
 			return
 		}
 
-		s.Logger.Info("request", zap.ByteString("payload", rLog))
+		s.logger.Info("request", zap.ByteString("payload", rLog))
 		s.ServeHTTP(w, r)
 	})
 }
@@ -204,9 +204,9 @@ func (s *ProxyServer) WithRequestLoggerMiddleware() http.Handler {
 // value of the `RejectExact` boolean. Whether this check is case-sensitve is determined by the RejectInsensitive
 // boolean. Lastly, the value it validates against is determined by the value of the `RejectWith` string.
 func (s *ProxyServer) validateRequestBody(b string) error {
-	v := s.RejectWith
+	v := s.rejectWith
 	// make validation case-insensitive
-	if s.RejectInsensitive {
+	if s.rejectInsensitive {
 		b = strings.ToLower(b)
 		v = strings.ToLower(v)
 	}
@@ -215,7 +215,7 @@ func (s *ProxyServer) validateRequestBody(b string) error {
 	invalid := []string{v}
 
 	// specific / exact cases, consider regex
-	if s.RejectExact {
+	if s.rejectExact {
 		c1 := fmt.Sprintf(" %s ", v)   // ` bad_message `
 		c2 := fmt.Sprintf("\"%s\"", v) // `"bad_message"`
 		c3 := fmt.Sprintf(" %s\"", v)  // ` bad_message"`
@@ -236,7 +236,7 @@ func (s *ProxyServer) validateRequestBody(b string) error {
 // host, and base path provided in target. If the target's path is "/base" and
 // the incoming request was for "/dir", the target request will be for /base/dir.
 func (s *ProxyServer) prepareRequest(r *http.Request) (*http.Request, error) {
-	target, err := url.Parse(s.TargetURL)
+	target, err := url.Parse(s.targetURL)
 	if err != nil {
 		return nil, errors.New("unable to parse target url")
 	}
@@ -323,9 +323,9 @@ func (s *ProxyServer) requestBackendService(w http.ResponseWriter, r *http.Reque
 
 	newResp, err := io.Copy(w, resp.Body)
 	if err := resp.Body.Close(); err != nil {
-		s.Logger.Error("failed to close response", zap.Error(err))
+		s.logger.Error("failed to close response", zap.Error(err))
 	}
-	s.Logger.Debug("copied bytes to client", zap.Int64("body", newResp))
+	s.logger.Debug("copied bytes to client", zap.Int64("body", newResp))
 
 	// the status code is only used when the server encounters an error
 	// returning 418 I'M A TEAPOT status code as a place holder.
@@ -340,7 +340,7 @@ func (s *ProxyServer) writeError(w http.ResponseWriter, code int, msg string) {
 		Msg:  msg,
 	}
 
-	s.Logger.Info("response", zap.Any("error", errJSON))
+	s.logger.Info("response", zap.Any("error", errJSON))
 
 	buf, err := json.Marshal(&errJSON)
 	if err != nil {
@@ -375,7 +375,7 @@ func (s *ProxyServer) copyBody(b io.ReadCloser) (r1 io.ReadCloser, r2 io.ReadClo
 }
 
 // copyHeader creates and returns a HeaderCopy.
-func (s *ProxyServer) copyHeader(h http.Header) (hc HeaderCopy) {
+func (s *ProxyServer) copyHeader(h http.Header) (hc headerCopy) {
 	for k, vv := range h {
 		switch k {
 		case "Host":

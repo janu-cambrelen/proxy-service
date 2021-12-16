@@ -3,29 +3,8 @@ package proxyserver // import "github.com/janu-cambrelen/proxy-service/internal/
 
 TYPES
 
-type HeaderCopy struct {
-	Host           []string
-	Accept         []string
-	UserAgent      []string
-	Connection     []string
-	ContentType    []string
-	ContentLength  []string
-	AcceptEncoding []string
-}
-    HeaderCopy defines a subset of common, non-auth, related headers. These
-    headers will be used when comparing two requests. The values are captured
-    from incoming HTTP headers.
-
 type ProxyServer struct {
-	Debug             bool
-	TargetURL         string
-	RequestDelay      uint
-	BodyMethodsOnly   bool
-	RejectWith        string
-	RejectExact       bool
-	RejectInsensitive bool
-	Logger            *zap.Logger
-	PriorRequest      RequestCopy
+	// Has unexported fields.
 }
     ProxyServer defines the HTTP proxy server.
 
@@ -52,7 +31,7 @@ type RequestCopy struct {
 	Method    string
 	TargetURL string
 	TargetURI string
-	Header    HeaderCopy
+	Header    headerCopy
 	Body      []byte
 }
     RequestCopy defines a request representation that is used to compare

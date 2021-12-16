@@ -47,9 +47,9 @@ func TestBodyValidation(t *testing.T) {
 		t.Run(fmt.Sprintf("body=%s/message=%s/exact=%t/insensitive=%t/allowed=%t", tCase.body, tCase.msg, tCase.exact, tCase.insensitive, tCase.allowed),
 			func(t *testing.T) {
 
-				server.RejectWith = tCase.msg
-				server.RejectExact = tCase.exact
-				server.RejectInsensitive = tCase.insensitive
+				server.rejectWith = tCase.msg
+				server.rejectExact = tCase.exact
+				server.rejectInsensitive = tCase.insensitive
 
 				err := server.validateRequestBody(tCase.body)
 
