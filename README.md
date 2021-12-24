@@ -74,7 +74,7 @@ The service will delay its response by *two seconds* if consective requests, con
 
 The delay can be changed via the `REQUEST_DELAY` environment file setting or by the `-request-delay` CLI flag. Only positive integer values are supported.
 
-The server will fail to initialize if the request delay is negative; otherwise, if not set, it will fault to two seconds.
+The server will fail to initialize if the request delay is negative; otherwise, if not set, it will default to two seconds.
 
 ---
 > Sample Backend Service: https://jsonplaceholder.typicode.com/
@@ -150,7 +150,7 @@ go doc --all internal/proxyserver > doc/proxyserver.txt
 ```
 ---
 ## TODO
-- [ ] Dockerize
+- [X] Dockerize
 - [ ] Deploy Scripts / Makefile
 - [ ] Precommit Hooks (e.g., go mod tidy, docs)
 - [ ] Test Coverage
