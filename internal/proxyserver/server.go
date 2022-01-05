@@ -44,7 +44,7 @@ type RequestCopy struct {
 
 // headerCopy defines a subset of common, non-auth, related headers.
 // These headers will be used when comparing two requests.
-// The values are captured from incoming HTTP headers.
+// The values are captured from incoming HTTP request headers.
 type headerCopy struct {
 	Host           []string
 	Accept         []string
@@ -55,7 +55,7 @@ type headerCopy struct {
 	AcceptEncoding []string
 }
 
-// proxyErrorResponse defines a server error that is marshalled to JSON and returned to the client.
+// proxyErrorResponse defines a server error that is marshalled into JSON and returned to the client.
 type proxyErrorResponse struct {
 	Code string `json:"code"`
 	Msg  string `json:"msg"`

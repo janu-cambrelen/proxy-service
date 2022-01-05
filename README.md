@@ -39,7 +39,25 @@ REJECT_INSENSITIVE=false
 REQUEST_DELAY=2' > .env
 go run main.go
 ```
-
+---
+## Docker
+Build
+```bash
+docker build -t proxy-scratch . 
+```
+Run
+```bash
+docker run -p 8080:8080 -it --rm proxy-scratch \
+-debug=true \
+-host=0.0.0.0 \
+-port=8080 \
+-target-url=http://jsonplaceholder.typicode.com/ \
+-body-methods-only=false \
+-reject-with=bad_message \
+-reject-exact=true \
+-reject-insensitive=false \
+-request-delay=2
+```
 ---
 ## Overview / Usage
 
@@ -63,7 +81,7 @@ The client will receive an error, detailing the issue, if the aforementioned is 
 #### **Request Filtering:**
 This service can reject requests from ever reaching the backend / target based on a specfied word or phrase contained within the `REJECT_WITH` environment file setting or by the `reject-with` CLI flag.
 
-Whether this validation is concerned with an "exact" match or "contains" match determined by the `REJECT_EXACT` environment file setting or by the `reject-exact` CLI flag.
+Whether this validation is concerned with an "exact" match or a "contains" match is determined by the `REJECT_EXACT` environment file setting or by the `reject-exact` CLI flag.
 
 Finally, whether this check is case-sensitve is determined by the `REJECT_INSENSITIVE` environment file setting or by the `reject-insensitive` CLI flag.
 
@@ -74,7 +92,7 @@ The service will delay its response by *two seconds* if consective requests, con
 
 The delay can be changed via the `REQUEST_DELAY` environment file setting or by the `-request-delay` CLI flag. Only positive integer values are supported.
 
-The server will fail to initialize if the request delay is negative; otherwise, if not set, it will default to two seconds.
+The server will fail to initialize if the `REQUEST_DELAY` value is negative; otherwise, if not set, it will default to two seconds.
 
 ---
 > Sample Backend Service: https://jsonplaceholder.typicode.com/
