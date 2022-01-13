@@ -20,7 +20,7 @@ if [ -e "$file" ]; then
     mv temp_config_name .env
 
 else 
-    echo ".env file does not exists, running e2e tests"
+    echo ".env file does not exist, running e2e tests"
     eval $test_runner
     
 fi 

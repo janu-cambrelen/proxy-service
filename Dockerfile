@@ -37,8 +37,8 @@ FROM scratch
 
 COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
-
 COPY --from=builder /app/proxy /
+COPY --from=builder /app/.env /
 
 USER app-user:app-group
 
