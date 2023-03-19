@@ -201,7 +201,7 @@ func (s *ProxyServer) WithRequestLoggerMiddleware() http.Handler {
 
 // validateRequestBody validates whether the body includes an unwanted word or phrase.
 // Whether this validation is concerned with an "exact" match or "contains" is determined by the
-// value of the `RejectExact` boolean. Whether this check is case-sensitve is determined by the RejectInsensitive
+// value of the `RejectExact` boolean. Whether this check is case-sensitive is determined by the RejectInsensitive
 // boolean. Lastly, the value it validates against is determined by the value of the `RejectWith` string.
 func (s *ProxyServer) validateRequestBody(b string) error {
 	v := s.rejectWith
@@ -290,7 +290,7 @@ func (s *ProxyServer) prepareRequest(r *http.Request) (*http.Request, error) {
 }
 
 // sanitizeHeader takes in a request and removes hop-by-hop headers and those that are
-// uncessary or could get in the way of processing the proxied request or consuming the proxied
+// unnecessary or could get in the way of processing the proxied request or consuming the proxied
 // response (e.g., Accept-Encoding). This method is used within the `prepareRequest` method.
 func (s *ProxyServer) sanitizeHeader(r *http.Request) *http.Request {
 	r.Header.Del("Te")
@@ -344,7 +344,7 @@ func (s *ProxyServer) writeError(w http.ResponseWriter, code int, msg string) {
 
 	buf, err := json.Marshal(&errJSON)
 	if err != nil {
-		buf = []byte("{\"code\": \"" + codeString + "\"\"msg\": \"There was a response that could not be serialzed into JSON\"}")
+		buf = []byte("{\"code\": \"" + codeString + "\"\"msg\": \"There was a response that could not be serialized into JSON\"}")
 	}
 
 	w.Header().Set("Content-Type", "application/json")

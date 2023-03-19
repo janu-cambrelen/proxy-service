@@ -1,9 +1,12 @@
 # Proxy Service
+
 > A service to proxy requests to a given backend service.
 
 ---
 Go 1.17+
+
 ## Clone
+
 ```
 git clone git@github.com:janu-cambrelen/proxy-service.git
 ```
@@ -83,7 +86,7 @@ This service can reject requests from ever reaching the backend / target based o
 
 Whether this validation is concerned with an "exact" match or a "contains" match is determined by the `REJECT_EXACT` environment file setting or by the `reject-exact` CLI flag.
 
-Finally, whether this check is case-sensitve is determined by the `REJECT_INSENSITIVE` environment file setting or by the `reject-insensitive` CLI flag.
+Finally, whether this check is case-sensitive is determined by the `REJECT_INSENSITIVE` environment file setting or by the `reject-insensitive` CLI flag.
 
 ---
 #### **Consecutive Request Delay:**
@@ -167,8 +170,3 @@ go doc --all cmd  > doc/cmd.txt
 go doc --all internal/proxyserver > doc/proxyserver.txt
 ```
 ---
-## TODO
-- [X] Dockerize
-- [ ] Deploy Scripts / Makefile
-- [ ] Precommit Hooks (e.g., go mod tidy, docs)
-- [ ] Test Coverage
