@@ -7,9 +7,9 @@ func NewLogger(debug bool) (*zap.Logger, error)
     NewLogger is a simple wrapper function to return either a development or
     production logger based on the boolean value of the DEBUG configuration
     setting. The development logger writes DEBUG and above, whereas the
-    production logger writes INFO and above. The developement logger is, among
-    other things, more readable and useful for developement; however, it should
-    not be used in production.
+    production logger writes INFO and above. The development logger is,
+    among other things, more readable and useful for development; however,
+    it should not be used in production.
 
 func Run() error
 
